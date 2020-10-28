@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Api_app</string>
+
+    <string name="naver_client_id">1648z0s13gQ4UBrJYDhh</string>
+    <string name="naver_client_secret">DRy2mkQWKI</string>
+    <string name="naver_client_name">xxx</string>
 </resources>
