@@ -134,7 +134,7 @@ public class searchyoutube_activity extends AppCompatActivity {
 
 				search.setQ(get_value);
 				//search.setChannelId("UCk9GmdlDTBfgGRb7vXeRMoQ"); //레드벨벳 공식 유투브 채널
-				search.setOrder("viewCount"); //조회수 높은 순으로 조회
+				search.setOrder("relevance"); //조회수 높은 순으로 조회
 
 				search.setType("video");
 

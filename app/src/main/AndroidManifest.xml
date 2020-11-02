@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
+        <!--<activity android:name=".playyoutube_activity">-->
         <activity android:name=".searchyoutube_activity">
         <!--<activity android:name=".MainActivity">-->
             <intent-filter>

@@ -9,11 +9,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerView;
@@ -34,7 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class playyoutube_activity extends AppCompatActivity {
+public class playyoutube_activity extends YouTubeBaseActivity {
 	private String API_KEY = "AIzaSyAp7r8cvdjSIHPbbZyjx7vaKrsAyIAyINI";
 
 	YouTubePlayerView YouTubePlayerView;
@@ -49,18 +51,22 @@ public class playyoutube_activity extends AppCompatActivity {
 		String intent_address = intent.getStringExtra("video_id");
 
 		YouTubePlayerView = findViewById(R.id.YouTubePlayerView);
+
 		listener = new YouTubePlayer.OnInitializedListener() {
 			@Override
 			public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
-				youTubePlayer.loadVideo(intent_address); //
+				//youTubePlayer.loadVideo("C8KdDA1YBh0");
+				youTubePlayer.loadVideo(intent_address);
 				//https://www.youtube.com/watch?v=NmkYHmiNArc 유투브에서 v="" 이부분이 키에 해당
 			}
 
 			@Override
 			public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
-
+				//YouTubePlayerView.initialize(API_KEY, listener);
 			}
 		};
+
+		YouTubePlayerView.initialize(API_KEY, listener);
 
 	}
 }
