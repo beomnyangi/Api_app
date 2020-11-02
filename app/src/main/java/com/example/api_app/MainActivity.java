@@ -4,8 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
@@ -104,10 +106,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Thread thread = new Thread(new get_info());
-        thread.start();
-
-        /*Button bt_get = (Button) findViewById(R.id.bt_get);
+        Button bt_get = (Button) findViewById(R.id.bt_get);
         bt_get.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -115,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 Thread thread = new Thread(new get_info());
                 thread.start();
             }
-        });*/
+        });
 
         Button bt_check = (Button) findViewById(R.id.bt_check);
         bt_check.setOnClickListener(new Button.OnClickListener() {
@@ -148,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
             requestHeaders.put("Authorization", header);
             String responseBody = get(apiURL,requestHeaders);
 
-
             Log.i("LoginData","get id info : "+ responseBody);
             System.out.println(responseBody);
 
@@ -168,7 +166,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("LoginData","email : "+ email);
                     Log.i("LoginData","name : "+ name);
 
-                    Toast.makeText(getApplicationContext(), name+"님 반갑습니다.", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, youtube_activity.class);
+                    startActivity(intent);
                 }
                 else if (object.getString("resultcode").equals("024")) {
                     ib_login.setVisibility(View.VISIBLE);
@@ -178,8 +177,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-
         }
 
         private String get(String apiUrl, Map<String, String> requestHeaders){
@@ -230,11 +227,4 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
-
-
-
-
-
-
 }

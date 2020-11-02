@@ -2,6 +2,10 @@ plugins {
     id 'com.android.application'
 }
 
+//youtube api
+apply plugin: 'com.android.application'
+
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
@@ -26,6 +30,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    //youtube api
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+    }
 }
 
 dependencies {
@@ -36,6 +45,12 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    //youtube api
+    implementation 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
+    implementation 'com.google.http-client:google-http-client-android:+'
+    implementation 'com.google.api-client:google-api-client-android:+'
+    implementation 'com.google.api-client:google-api-client-gson:+'
 
     //네이버 로그인
     implementation 'com.naver.nid:naveridlogin-android-sdk:4.2.6'   // import from jcenter
