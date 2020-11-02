@@ -42,9 +42,14 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    implementation fileTree(dir: 'C:\\Users\\beom\\AndroidStudioProjects\\YouTubeAndroidPlayerApi-1.2.2\\sample\\libs', include: ['*.aar', '*.jar'], exclude: [])
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    //glide
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
 
     //youtube api
     implementation 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
