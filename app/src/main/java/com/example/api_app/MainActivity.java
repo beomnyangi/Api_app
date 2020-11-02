@@ -5,20 +5,43 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nhn.android.naverlogin.OAuthLogin;
 import com.nhn.android.naverlogin.OAuthLoginHandler;
 
-public class MainActivity extends AppCompatActivity {
+import org.json.JSONObject;
 
-    Button bt_login;
-    Button bt_logout;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity {
+    private String OAUTH_CLIENT_ID = "1648z0s13gQ4UBrJYDhh";
+    private String OAUTH_CLIENT_SECRET = "DRy2mkQWKI";
+    private String OAUTH_CLIENT_NAME = "test";
+
+    String accessToken;
+
+    ImageButton ib_login;
+    ImageButton ib_logout;
+
+    TextView tv_name;
+
+    String name;
 
     OAuthLogin mOAuthLoginModule;
     Context mContext;
@@ -30,28 +53,34 @@ public class MainActivity extends AppCompatActivity {
 
         mContext = getApplicationContext();
 
-        bt_login = findViewById(R.id.bt_login);
-        bt_logout = findViewById(R.id.bt_logout);
+        ib_login = findViewById(R.id.ib_login);
+        ib_logout = findViewById(R.id.ib_logout);
 
-        bt_login.setOnClickListener(new View.OnClickListener() {
+        tv_name = findViewById(R.id.tv_name);
+
+        mOAuthLoginModule = OAuthLogin.getInstance();
+        mOAuthLoginModule.init(
+                MainActivity.this
+                ,OAUTH_CLIENT_ID
+                ,OAUTH_CLIENT_SECRET
+                ,OAUTH_CLIENT_NAME
+                //,OAUTH_CALLBACK_INTENT
+                // SDK 4.1.4 버전부터는 OAUTH_CALLBACK_INTENT변수를 사용하지 않습니다.
+        );
+
+        ib_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mOAuthLoginModule = OAuthLogin.getInstance();
-                mOAuthLoginModule.init(
-                        mContext
-                        ,getString(R.string.naver_client_id)
-                        ,getString(R.string.naver_client_secret)
-                        ,getString(R.string.naver_client_name)
-                        //,OAUTH_CALLBACK_INTENT
-                        // SDK 4.1.4 버전부터는 OAUTH_CALLBACK_INTENT변수를 사용하지 않습니다.
-                );
-
+                /**
+                 * OAuthLoginHandler를 startOAuthLoginActivity() 메서드 호출 시 파라미터로 전달하거나 OAuthLoginButton
+                 객체에 등록하면 인증이 종료되는 것을 확인할 수 있습니다.
+                 */
                 @SuppressLint("HandlerLeak")
                 OAuthLoginHandler mOAuthLoginHandler = new OAuthLoginHandler() {
                     @Override
                     public void run(boolean success) {
                         if (success) {
-                            String accessToken = mOAuthLoginModule.getAccessToken(mContext);
+                            accessToken = mOAuthLoginModule.getAccessToken(mContext);
                             String refreshToken = mOAuthLoginModule.getRefreshToken(mContext);
                             long expiresAt = mOAuthLoginModule.getExpiresAt(mContext);
                             String tokenType = mOAuthLoginModule.getTokenType(mContext);
@@ -75,12 +104,137 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        bt_logout.setOnClickListener(new View.OnClickListener() {
+        Thread thread = new Thread(new get_info());
+        thread.start();
+
+        /*Button bt_get = (Button) findViewById(R.id.bt_get);
+        bt_get.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mOAuthLoginModule.logout(mContext);
+                //버튼이 클릭 됐을 때
+                Thread thread = new Thread(new get_info());
+                thread.start();
+            }
+        });*/
+
+        Button bt_check = (Button) findViewById(R.id.bt_check);
+        bt_check.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //버튼이 클릭 됐을 때
+                tv_name.setText(""+name);
+            }
+        });
+
+        ib_logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mOAuthLoginModule.logout(MainActivity.this);
                 Toast.makeText(MainActivity.this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
+                accessToken = null;
             }
         });
     }
+
+    class get_info implements Runnable {
+        @Override
+        public void run() {
+            String token = accessToken; // 네이버 로그인 접근 토큰;
+            String header = "Bearer " + token; // Bearer 다음에 공백 추가
+
+            String apiURL = "https://openapi.naver.com/v1/nid/me";
+
+            Map<String, String> requestHeaders = new HashMap<>();
+            requestHeaders.put("Authorization", header);
+            String responseBody = get(apiURL,requestHeaders);
+
+
+            Log.i("LoginData","get id info : "+ responseBody);
+            System.out.println(responseBody);
+
+            try {
+                //넘어온 result 값을 JSONObject 로 변환해주고, 값을 가져오면 되는데요.
+                // result 를 Log에 찍어보면 어떻게 가져와야할 지 감이 오실거에요.
+                JSONObject object = new JSONObject(responseBody);
+                Log.d("LoginData","결과 : "+responseBody);
+                if (object.getString("resultcode").equals("00")) {
+                    ib_login.setVisibility(View.INVISIBLE);
+                    ib_logout.setVisibility(View.VISIBLE);
+                    JSONObject jsonObject = new JSONObject(object.getString("response"));
+                    String email = jsonObject.getString("email");
+                    name = jsonObject.getString("name");
+                    Log.d("jsonObject", jsonObject.toString());
+
+                    Log.i("LoginData","email : "+ email);
+                    Log.i("LoginData","name : "+ name);
+
+                    Toast.makeText(getApplicationContext(), name+"님 반갑습니다.", Toast.LENGTH_SHORT).show();
+                }
+                else if (object.getString("resultcode").equals("024")) {
+                    ib_login.setVisibility(View.VISIBLE);
+                    ib_logout.setVisibility(View.INVISIBLE);
+                    name = null;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+        private String get(String apiUrl, Map<String, String> requestHeaders){
+            HttpURLConnection con = connect(apiUrl);
+            try {
+                con.setRequestMethod("GET");
+                for(Map.Entry<String, String> header :requestHeaders.entrySet()) {
+                    con.setRequestProperty(header.getKey(), header.getValue());
+                }
+
+                int responseCode = con.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) { // 정상 호출
+                    return readBody(con.getInputStream());
+                } else { // 에러 발생
+                    return readBody(con.getErrorStream());
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("API 요청과 응답 실패", e);
+            } finally {
+                con.disconnect();
+            }
+        }
+        private HttpURLConnection connect(String apiUrl){
+            try {
+                URL url = new URL(apiUrl);
+                return (HttpURLConnection)url.openConnection();
+            } catch (MalformedURLException e) {
+                throw new RuntimeException("API URL이 잘못되었습니다. : " + apiUrl, e);
+            } catch (IOException e) {
+                throw new RuntimeException("연결이 실패했습니다. : " + apiUrl, e);
+            }
+        }
+        private String readBody(InputStream body){
+            InputStreamReader streamReader = new InputStreamReader(body);
+
+            try (BufferedReader lineReader = new BufferedReader(streamReader)) {
+                StringBuilder responseBody = new StringBuilder();
+
+                String line;
+                while ((line = lineReader.readLine()) != null) {
+                    responseBody.append(line);
+                }
+
+                return responseBody.toString();
+            } catch (IOException e) {
+                throw new RuntimeException("API 응답을 읽는데 실패했습니다.", e);
+            }
+        }
+
+    }
+
+
+
+
+
+
+
 }
