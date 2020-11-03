@@ -12,8 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <!--<activity android:name=".playyoutube_activity">-->
-        <activity android:name=".searchyoutube_activity">
+        <activity android:name=".menu_activity">
         <!--<activity android:name=".MainActivity">-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,8 +21,10 @@
             </intent-filter>
         </activity>
 
-        <!--<activity android:name=".youtube_activity"/>-->
         <activity android:name=".playyoutube_activity"/>
+        <activity android:name=".searchyoutube_activity"/>
+        <activity android:name=".papago_translate_activity"/>
+        <!--<activity android:name=".menu_activity"/>-->
 
     </application>
 

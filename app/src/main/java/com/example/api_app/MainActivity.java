@@ -36,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
     private String OAUTH_CLIENT_SECRET = "DRy2mkQWKI";
     private String OAUTH_CLIENT_NAME = "test";
 
+    boolean login_check = false;
+    boolean thread_check = false;
+
     String accessToken;
 
     ImageButton ib_login;
@@ -47,6 +50,40 @@ public class MainActivity extends AppCompatActivity {
 
     OAuthLogin mOAuthLoginModule;
     Context mContext;
+
+    Handler handler_get = new Handler(Looper.myLooper());
+    Runnable runnable_get = new Runnable() {
+        @Override
+        public void run() {
+            Thread thread = new Thread(new get_info());
+            thread.start();
+            handler_get.removeCallbacks(runnable_get);
+        }
+    };
+
+    Handler handler = new Handler(Looper.myLooper());
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            handler_get.post(runnable_get);
+            if(login_check == false){
+                ib_login.setVisibility(View.VISIBLE);
+                ib_logout.setVisibility(View.INVISIBLE);
+                //Toast.makeText(getApplicationContext(), "로그인 해야됨", Toast.LENGTH_SHORT).show();
+                handler.postDelayed(runnable,500);
+            }
+            if(login_check == true){
+                ib_login.setVisibility(View.INVISIBLE);
+                ib_logout.setVisibility(View.VISIBLE);
+                Toast.makeText(getApplicationContext(), name+"님, 로그인 성공", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, menu_activity.class);
+                startActivity(intent);
+
+                handler.postDelayed(runnable,500);
+                handler.removeCallbacks(runnable);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         ib_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                handler.post(runnable);
                 /**
                  * OAuthLoginHandler를 startOAuthLoginActivity() 메서드 호출 시 파라미터로 전달하거나 OAuthLoginButton
                  객체에 등록하면 인증이 종료되는 것을 확인할 수 있습니다.
@@ -100,19 +138,9 @@ public class MainActivity extends AppCompatActivity {
                                     + ", errorDesc:" + errorDesc, Toast.LENGTH_SHORT).show();
                         }
                     };
+
                 };
-
                 mOAuthLoginModule.startOauthLoginActivity(MainActivity.this, mOAuthLoginHandler);
-            }
-        });
-
-        Button bt_get = (Button) findViewById(R.id.bt_get);
-        bt_get.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //버튼이 클릭 됐을 때
-                Thread thread = new Thread(new get_info());
-                thread.start();
             }
         });
 
@@ -128,9 +156,11 @@ public class MainActivity extends AppCompatActivity {
         ib_logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                handler.post(runnable);
                 mOAuthLoginModule.logout(MainActivity.this);
                 Toast.makeText(MainActivity.this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
                 accessToken = null;
+
             }
         });
     }
@@ -156,8 +186,6 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject object = new JSONObject(responseBody);
                 Log.d("LoginData","결과 : "+responseBody);
                 if (object.getString("resultcode").equals("00")) {
-                    ib_login.setVisibility(View.INVISIBLE);
-                    ib_logout.setVisibility(View.VISIBLE);
                     JSONObject jsonObject = new JSONObject(object.getString("response"));
                     String email = jsonObject.getString("email");
                     name = jsonObject.getString("name");
@@ -166,17 +194,17 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("LoginData","email : "+ email);
                     Log.i("LoginData","name : "+ name);
 
-                    Intent intent = new Intent(MainActivity.this, youtube_activity.class);
-                    startActivity(intent);
+                    login_check = true;
                 }
                 else if (object.getString("resultcode").equals("024")) {
-                    ib_login.setVisibility(View.VISIBLE);
-                    ib_logout.setVisibility(View.INVISIBLE);
+
+                    login_check = false;
                     name = null;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
         }
 
         private String get(String apiUrl, Map<String, String> requestHeaders){
