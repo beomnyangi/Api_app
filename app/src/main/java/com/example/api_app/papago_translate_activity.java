@@ -1,6 +1,5 @@
 package com.example.api_app;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,12 +7,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
-
-import com.google.android.youtube.player.YouTubeBaseActivity;
-
+import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,15 +24,17 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
-
-public class papago_translate_activity extends YouTubeBaseActivity {
+public class papago_translate_activity extends AppCompatActivity {
 	EditText et_search;
 	TextView tv_result;
 	Button bt_search;
-
+	TextView textView1;
+	TextView textView2;
+	ImageButton bt_trance;
 	String value;
-
 	String result;
+	String postParams;
+	boolean len_check;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,14 +43,40 @@ public class papago_translate_activity extends YouTubeBaseActivity {
 
 		et_search = findViewById(R.id.et_search);
 		bt_search = findViewById(R.id.bt_search);
+		textView1 = findViewById(R.id.textView1);
+		textView2 = findViewById(R.id.textView2);
 		tv_result = findViewById(R.id.tv_result);
+
+		bt_trance = findViewById(R.id.bt_trance);
+
+		//초기 번역 설정으로 한국어 -> 영어
+		len_check = true;
+		textView1.setText("한국어");
+		textView2.setText("영어");
+
+		bt_trance.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				//버튼이 클릭 됐을 때
+				if(len_check){
+					len_check = false;
+					textView1.setText("영어");
+					textView2.setText("한국어");
+				}
+				else {
+					len_check = true;
+					textView1.setText("한국어");
+					textView2.setText("영어");
+
+				}
+			}
+		});
 
 		bt_search.setOnClickListener(new Button.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				//버튼이 클릭 됐을 때
 				value = String.valueOf(et_search.getText());
-
 				Thread thread = new Thread(new get_info());
 				thread.start();
 
@@ -59,15 +84,11 @@ public class papago_translate_activity extends YouTubeBaseActivity {
 			}
 		});
 
+		//edittext에 입력 변화가 있을 때 할 일
 		et_search.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				// 입력란에 변화가 있을 시 조치
-				value = String.valueOf(et_search.getText());
-				Thread thread = new Thread(new get_info());
-				thread.start();
-				tv_result.setText(""+result);
-				System.out.println("111111111");
 			}
 
 			@Override
@@ -76,18 +97,11 @@ public class papago_translate_activity extends YouTubeBaseActivity {
 				value = String.valueOf(et_search.getText());
 				Thread thread = new Thread(new get_info());
 				thread.start();
-				tv_result.setText(""+result);
-				System.out.println("22222222");
 			}
 
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 				// 입력하기 전에 조치
-				value = String.valueOf(et_search.getText());
-				Thread thread = new Thread(new get_info());
-				thread.start();
-				tv_result.setText(""+result);
-				System.out.println("3333333");
 			}
 		});
 	}
@@ -115,8 +129,7 @@ public class papago_translate_activity extends YouTubeBaseActivity {
 			System.out.println(responseBody);
 
 			try {
-				//넘어온 result 값을 JSONObject 로 변환해주고, 값을 가져오면 되는데요.
-				// result 를 Log에 찍어보면 어떻게 가져와야할 지 감이 오실거에요.
+				//반환 받은 responseBody 값을 JSONObject 로 변환해주고, 값을 가져오는 과정
 				JSONObject object = new JSONObject(responseBody);
 				Log.d("LoginData","결과 : "+responseBody);
 
@@ -127,7 +140,7 @@ public class papago_translate_activity extends YouTubeBaseActivity {
 
 				result = resultobject.getString("translatedText");
 
-				Log.i("LoginData","value : "+ result);
+				Log.i("LoginData","result : "+ result);
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -137,7 +150,14 @@ public class papago_translate_activity extends YouTubeBaseActivity {
 
 		private String post(String apiUrl, Map<String, String> requestHeaders, String text){
 			HttpURLConnection con = connect(apiUrl);
-			String postParams = "source=ko&target=en&text=" + text; //원본언어: 한국어 (ko) -> 목적언어: 영어 (en)
+			if(len_check == true){
+				postParams = "source=ko&target=en&text=" + text; //원본언어: 한국어  -> 목적언어: 영어
+			}
+			if(len_check == false){
+				postParams = "source=en&target=ko&text=" + text; //원본언어: 영어  -> 목적언어: 한국어
+			}
+
+
 			try {
 				con.setRequestMethod("POST");
 				for(Map.Entry<String, String> header :requestHeaders.entrySet()) {

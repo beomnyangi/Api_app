@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton ib_login;
     ImageButton ib_logout;
 
-    TextView tv_name;
+    TextView textView;
 
     String name;
 
@@ -55,9 +55,7 @@ public class MainActivity extends AppCompatActivity {
     Runnable runnable_get = new Runnable() {
         @Override
         public void run() {
-            Thread thread = new Thread(new get_info());
-            thread.start();
-            handler_get.removeCallbacks(runnable_get);
+
         }
     };
 
@@ -65,23 +63,25 @@ public class MainActivity extends AppCompatActivity {
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            handler_get.post(runnable_get);
+            Thread thread = new Thread(new get_info());
+            thread.start();
             if(login_check == false){
-                ib_login.setVisibility(View.VISIBLE);
                 ib_logout.setVisibility(View.INVISIBLE);
+                ib_login.setVisibility(View.VISIBLE);
+                System.out.println("asdfsdfasfdasfdasf");
+                textView.setText(name);
+                //handler.removeCallbacks(runnable);
                 //Toast.makeText(getApplicationContext(), "로그인 해야됨", Toast.LENGTH_SHORT).show();
-                handler.postDelayed(runnable,500);
             }
             if(login_check == true){
                 ib_login.setVisibility(View.INVISIBLE);
                 ib_logout.setVisibility(View.VISIBLE);
-                Toast.makeText(getApplicationContext(), name+"님, 로그인 성공", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(MainActivity.this, menu_activity.class);
-                startActivity(intent);
-
-                handler.postDelayed(runnable,500);
-                handler.removeCallbacks(runnable);
+                //Toast.makeText(getApplicationContext(), name+"님, 로그인 성공", Toast.LENGTH_SHORT).show();
+                textView.setText(name+"님이 로그인 함");
+                //handler.removeCallbacks(runnable);
             }
+
+            handler.postDelayed(runnable,500);
         }
     };
 
@@ -94,8 +94,8 @@ public class MainActivity extends AppCompatActivity {
 
         ib_login = findViewById(R.id.ib_login);
         ib_logout = findViewById(R.id.ib_logout);
+        textView = findViewById(R.id.textView);
 
-        tv_name = findViewById(R.id.tv_name);
 
         mOAuthLoginModule = OAuthLogin.getInstance();
         mOAuthLoginModule.init(
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         ib_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                handler.post(runnable);
+
                 /**
                  * OAuthLoginHandler를 startOAuthLoginActivity() 메서드 호출 시 파라미터로 전달하거나 OAuthLoginButton
                  객체에 등록하면 인증이 종료되는 것을 확인할 수 있습니다.
@@ -144,25 +144,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button bt_check = (Button) findViewById(R.id.bt_check);
-        bt_check.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //버튼이 클릭 됐을 때
-                tv_name.setText(""+name);
-            }
-        });
-
         ib_logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                handler.post(runnable);
                 mOAuthLoginModule.logout(MainActivity.this);
-                Toast.makeText(MainActivity.this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
                 accessToken = null;
-
             }
         });
+
+
+        Button bt_youtube_api = findViewById(R.id.bt_youtube_api);
+        bt_youtube_api.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //버튼이 클릭 됐을 때
+                Intent intent = new Intent(MainActivity.this, searchyoutube_activity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button bt_translation_api = findViewById(R.id.bt_translation_api);
+        bt_translation_api.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //버튼이 클릭 됐을 때
+                Intent intent = new Intent(MainActivity.this, papago_translate_activity.class);
+                startActivity(intent);
+            }
+        });
+
+        handler.post(runnable);
+
     }
 
     class get_info implements Runnable {
@@ -177,30 +190,35 @@ public class MainActivity extends AppCompatActivity {
             requestHeaders.put("Authorization", header);
             String responseBody = get(apiURL,requestHeaders);
 
-            Log.i("LoginData","get id info : "+ responseBody);
+            //Log.i("LoginData","get id info : "+ responseBody);
             System.out.println(responseBody);
 
             try {
                 //넘어온 result 값을 JSONObject 로 변환해주고, 값을 가져오면 되는데요.
                 // result 를 Log에 찍어보면 어떻게 가져와야할 지 감이 오실거에요.
                 JSONObject object = new JSONObject(responseBody);
-                Log.d("LoginData","결과 : "+responseBody);
+                //Log.d("LoginData","결과 : "+responseBody);
                 if (object.getString("resultcode").equals("00")) {
                     JSONObject jsonObject = new JSONObject(object.getString("response"));
                     String email = jsonObject.getString("email");
                     name = jsonObject.getString("name");
-                    Log.d("jsonObject", jsonObject.toString());
+                    //Log.d("jsonObject", jsonObject.toString());
 
-                    Log.i("LoginData","email : "+ email);
-                    Log.i("LoginData","name : "+ name);
+                    //Log.i("LoginData","email : "+ email);
+                    //Log.i("LoginData","name : "+ name);
 
                     login_check = true;
                 }
-                else if (object.getString("resultcode").equals("024")) {
+                else {
 
                     login_check = false;
-                    name = null;
+                    name = "로그인 정보 없음";
                 }
+                /*else if (object.getString("resultcode").equals("024")) {
+
+                    login_check = false;
+                    name = "로그인 정보 없음";
+                }*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
