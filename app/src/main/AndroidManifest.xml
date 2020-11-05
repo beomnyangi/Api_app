@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.api_app">
+    package="com.nova.api_app">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -32,8 +32,8 @@
 
 
 
-        <activity android:name=".playyoutube_activity"/>
-        <activity android:name=".searchyoutube_activity"/>
+        <activity android:name="playyoutube_activity"/>
+        <activity android:name="searchyoutube_activity"/>
         <activity android:name=".papago_translate_activity"/>
         <activity android:name=".menu_activity"/>
 

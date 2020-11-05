@@ -1,6 +1,5 @@
-package com.example.api_app;
+package com.nova.api_app;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
